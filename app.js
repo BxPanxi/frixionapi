@@ -29,6 +29,7 @@ const staffRoutes = require('./routes/staffRoutes');
 app.use('/api', userRoutes);
 app.use('/api', productRoutes);
 app.use('/api', staffRoutes);
+app.use('/web', express.static(path.join(__dirname, 'web')));
 
 // Start the server
 app.listen(port, () => {
