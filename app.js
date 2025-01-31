@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
-
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 const port = process.env.PORT;
@@ -31,7 +31,7 @@ const staffRoutes = require('./routes/staffRoutes');
 app.use('/api', userRoutes);
 app.use('/api', productRoutes);
 app.use('/api', staffRoutes);
-app.use('/web', express.static(path.join(__dirname, 'web')));
+app.use('/web', createProxyMiddleware({ target: 'https://localhost:8000', changeOrigin: true }));
 
 // Start the server
 app.listen(port, () => {
