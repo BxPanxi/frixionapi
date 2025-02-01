@@ -7,10 +7,10 @@ router.get('/users/:id?', checkApiKey, async (req, res) => {
   try {
     if (req.params.id) {
       // Fetch a specific user by ID
-      const [user] = await req.db.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
+      const [user] = await req.db.query('SELECT * FROM users WHERE userid = ?', [req.params.id]);
 
       if (user.length === 0) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.json(false); // Instead of 404, return false
       }
 
       res.json(user[0]); // Return the first (and only) user found
