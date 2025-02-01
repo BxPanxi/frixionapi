@@ -24,33 +24,34 @@ router.get('/users/:id?', checkApiKey, async (req, res) => {
   }
 });
 
-// Create a new user
+// Create or Update a user
 router.post('/users', checkApiKey, async (req, res) => {
-  const { username, userid, avatar, ownedProducts, borrowedProducts } = req.body;
+  const { username, userid, avatar, ownedProducts, borrowedProducts, Link } = req.body;
+
   try {
-    await req.db.query(
-      'INSERT INTO users (username, userid, avatar, ownedProducts, borrowedProducts) VALUES (?, ?, ?, ?, ?)',
-      [username, userid, avatar, ownedProducts.join(','), borrowedProducts.join(',')]
-    );
-    res.status(201).json({ message: 'User created successfully' });
+    // Check if the user already exists
+    const [existingUser] = await req.db.query('SELECT * FROM users WHERE userid = ?', [userid]);
+
+    if (existingUser.length > 0) {
+      // User exists, update their information
+      await req.db.query(
+        'UPDATE users SET username = ?, avatar = ?, ownedProducts = ?, borrowedProducts = ?, Link = ? WHERE userid = ?',
+        [username, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link, userid]
+      );
+      return res.json({ message: 'User updated successfully' });
+    } else {
+      // User does not exist, insert new record
+      await req.db.query(
+        'INSERT INTO users (username, userid, avatar, ownedProducts, borrowedProducts, Link) VALUES (?, ?, ?, ?, ?, ?)',
+        [username, userid, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link]
+      );
+      return res.status(201).json({ message: 'User created successfully' });
+    }
   } catch (err) {
-    res.status(500).json({ message: 'Error adding user', error: err });
+    res.status(500).json({ message: 'Error processing user data', error: err });
   }
 });
 
-// Update a user by ID
-router.patch('/users/:id', checkApiKey, async (req, res) => {
-  const { username, avatar, ownedProducts, borrowedProducts } = req.body;
-  try {
-    await req.db.query(
-      'UPDATE users SET username = ?, avatar = ?, ownedProducts = ?, borrowedProducts = ? WHERE id = ?',
-      [username, avatar, ownedProducts.join(','), borrowedProducts.join(','), req.params.id]
-    );
-    res.json({ message: 'User updated successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error updating user', error: err });
-  }
-});
 
 // Delete a user by ID
 router.delete('/users/:id', checkApiKey, async (req, res) => {
