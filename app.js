@@ -1,6 +1,5 @@
-// app.js
 const express = require('express');
-const mongoose = require('mongoose');
+const mysql = require('mysql2/promise'); // Using `mysql2` for async/await support
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
@@ -13,14 +12,27 @@ const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 30000,
-})
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.log('MongoDB connection error: ', err));
+// MySQL Connection Pool
+const db = mysql.createPool({
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+// Ensure database connection
+db.getConnection()
+  .then(() => console.log('Connected to MySQL'))
+  .catch(err => console.error('MySQL connection error:', err));
+
+// Make database accessible in routes
+app.use((req, res, next) => {
+  req.db = db;
+  next();
+});
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');

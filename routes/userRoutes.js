@@ -1,49 +1,52 @@
-// /routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
-const checkApiKey = require('../middleware/apiKeyMiddleware');  // Import the middleware
+const checkApiKey = require('../middleware/apiKeyMiddleware'); // Import middleware
 
 // Get all users
 router.get('/users', checkApiKey, async (req, res) => {
   try {
-    const users = await User.find();
+    const [users] = await req.db.query('SELECT * FROM users');
     res.json(users);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Database error', error: err });
   }
 });
 
-// POST /api/users (Create a new user) — Protected by API Key Middleware
-router.post('/users', checkApiKey, async (req, res) => {  // Add the middleware here
-  const { username, userid, avatar, ownedProducts } = req.body;
-  const newUser = new User({ username, userid, avatar, ownedProducts });
-
+// Create a new user
+router.post('/users', checkApiKey, async (req, res) => {
+  const { username, userid, avatar, ownedProducts, borrowedProducts } = req.body;
   try {
-    await newUser.save();
-    res.status(201).json(newUser);
+    await req.db.query(
+      'INSERT INTO users (username, userid, avatar, ownedProducts, borrowedProducts) VALUES (?, ?, ?, ?, ?)',
+      [username, userid, avatar, ownedProducts.join(','), borrowedProducts.join(',')]
+    );
+    res.status(201).json({ message: 'User created successfully' });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Error adding user', error: err });
   }
 });
 
-// PATCH /api/users/:id (Update a user by ID) — Protected by API Key Middleware
-router.patch('/users/:id', checkApiKey, async (req, res) => {  // Add the middleware here
+// Update a user by ID
+router.patch('/users/:id', checkApiKey, async (req, res) => {
+  const { username, avatar, ownedProducts, borrowedProducts } = req.body;
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedUser);
+    await req.db.query(
+      'UPDATE users SET username = ?, avatar = ?, ownedProducts = ?, borrowedProducts = ? WHERE id = ?',
+      [username, avatar, ownedProducts.join(','), borrowedProducts.join(','), req.params.id]
+    );
+    res.json({ message: 'User updated successfully' });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Error updating user', error: err });
   }
 });
 
-// DELETE /api/users/:id (Delete a user by ID) — Protected by API Key Middleware
-router.delete('/users/:id', checkApiKey, async (req, res) => {  // Add the middleware here
+// Delete a user by ID
+router.delete('/users/:id', checkApiKey, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    await req.db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Error deleting user', error: err });
   }
 });
 
