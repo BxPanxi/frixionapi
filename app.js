@@ -16,6 +16,7 @@ app.use(express.json());
 const db = mysql.createPool({
   uri: process.env.DATABASE_URL,  // Use your connection string here
   waitForConnections: true,
+  database: 'frixion-db',
   connectionLimit: 10,
   queueLimit: 0,
   ssl: {
