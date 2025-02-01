@@ -26,31 +26,53 @@ router.get('/users/:id?', checkApiKey, async (req, res) => {
 
 // Create or Update a user
 router.post('/users', checkApiKey, async (req, res) => {
-  const { username, userid, avatar, ownedProducts, borrowedProducts, Link, Linked } = req.body;
+  const { userid, ...updateFields } = req.body; // Extract userid separately
+
+  if (!userid) {
+      return res.status(400).json({ message: 'User ID is required' });
+  }
 
   try {
-    // Check if the user already exists
-    const [existingUser] = await req.db.query('SELECT * FROM users WHERE userid = ?', [userid]);
+      // Check if user exists
+      const [existingUser] = await req.db.query('SELECT * FROM users WHERE userid = ?', [userid]);
 
-    if (existingUser.length > 0) {
-      // User exists, update their information
-      await req.db.query(
-        'UPDATE users SET username = ?, avatar = ?, ownedProducts = ?, borrowedProducts = ?, Link = ?, Linked = ? WHERE userid = ?',
-        [username, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link, Linked, userid]
-      );
-      return res.json({ message: 'User updated successfully' });
-    } else {
-      // User does not exist, insert new record
-      await req.db.query(
-        'INSERT INTO users (username, userid, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [username, userid, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link, Linked]
-      );
-      return res.status(201).json({ message: 'User created successfully' });
-    }
+      if (existingUser.length > 0) {
+          // User exists, update only provided fields
+          const updateKeys = Object.keys(updateFields);
+          if (updateKeys.length === 0) {
+              return res.status(400).json({ message: 'No valid fields to update' });
+          }
+
+          const setClause = updateKeys.map(key => `${key} = ?`).join(', ');
+          const values = updateKeys.map(key => updateFields[key]);
+
+          await req.db.query(`UPDATE users SET ${setClause} WHERE userid = ?`, [...values, userid]);
+
+          return res.json({ message: 'User updated successfully' });
+      } else {
+          // User doesn't exist, create a new one
+          const defaultValues = {
+              username: '',
+              avatar: '',
+              ownedProducts: '',
+              borrowedProducts: '',
+              Link: '',
+              Linked: false,
+              ...updateFields // Override defaults with provided values
+          };
+
+          await req.db.query(
+              'INSERT INTO users (userid, username, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?)',
+              [userid, defaultValues.username, defaultValues.avatar, defaultValues.ownedProducts, defaultValues.borrowedProducts, defaultValues.Link, defaultValues.Linked]
+          );
+
+          return res.status(201).json({ message: 'User created successfully' });
+      }
   } catch (err) {
-    res.status(500).json({ message: 'Error processing user data', error: err });
+      res.status(500).json({ message: 'Error processing user data', error: err });
   }
 });
+
 
 
 // Delete a user by ID
