@@ -62,7 +62,7 @@ router.post('/users', checkApiKey, async (req, res) => {
           };
 
           await req.db.query(
-              'INSERT INTO users (userid, username, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?)',
+              'INSERT INTO users (userid, username, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?, ?)',
               [userid, defaultValues.username, defaultValues.avatar, defaultValues.ownedProducts, defaultValues.borrowedProducts, defaultValues.Link, defaultValues.Linked]
           );
 
