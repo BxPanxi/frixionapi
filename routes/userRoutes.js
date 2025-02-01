@@ -26,7 +26,7 @@ router.get('/users/:id?', checkApiKey, async (req, res) => {
 
 // Create or Update a user
 router.post('/users', checkApiKey, async (req, res) => {
-  const { username, userid, avatar, ownedProducts, borrowedProducts, Link } = req.body;
+  const { username, userid, avatar, ownedProducts, borrowedProducts, Link, Linked } = req.body;
 
   try {
     // Check if the user already exists
