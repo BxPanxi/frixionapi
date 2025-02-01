@@ -14,15 +14,14 @@ app.use(express.json());
 
 // MySQL Connection Pool using Heroku Config Vars
 const db = mysql.createPool({
-  host: process.env.MYSQL_HOST,           // Host URL from Heroku config vars
-  user: process.env.MYSQL_USER,           // Username from Heroku config vars
-  password: process.env.MYSQL_PASSWORD,   // Password from Heroku config vars
-  database: process.env.MYSQL_DATABASE,   // Database name from Heroku config vars
+  uri: process.env.DATABASE_URL,  // Use your connection string here
   waitForConnections: true,
-  connectionLimit: 10,                    // Maximum number of connections
-  queueLimit: 0                           // Unlimited queue length
+  connectionLimit: 10,
+  queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: true  // Ensure SSL is required
+  }
 });
-
 // Ensure database connection
 db.getConnection()
   .then(() => console.log('Connected to MySQL'))
