@@ -2,11 +2,23 @@ const express = require('express');
 const router = express.Router();
 const checkApiKey = require('../middleware/apiKeyMiddleware'); // Import middleware
 
-// Get all users
-router.get('/users', checkApiKey, async (req, res) => {
+// Get all users or a specific user by ID
+router.get('/users/:id?', checkApiKey, async (req, res) => {
   try {
-    const [users] = await req.db.query('SELECT * FROM users');
-    res.json(users);
+    if (req.params.id) {
+      // Fetch a specific user by ID
+      const [user] = await req.db.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
+
+      if (user.length === 0) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json(user[0]); // Return the first (and only) user found
+    } else {
+      // Fetch all users if no ID is provided
+      const [users] = await req.db.query('SELECT * FROM users');
+      res.json(users);
+    }
   } catch (err) {
     res.status(500).json({ message: 'Database error', error: err });
   }
