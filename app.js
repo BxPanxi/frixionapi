@@ -19,7 +19,7 @@ const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   ssl: {
-    rejectUnauthorized: true  // Ensure SSL is required
+    rejectUnauthorized: false  // Ensure SSL is required
   }
 });
 // Ensure database connection
