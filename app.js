@@ -12,15 +12,15 @@ const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
-// MySQL Connection Pool
+// MySQL Connection Pool using Heroku Config Vars
 const db = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
+  host: process.env.MYSQL_HOST,           // Host URL from Heroku config vars
+  user: process.env.MYSQL_USER,           // Username from Heroku config vars
+  password: process.env.MYSQL_PASSWORD,   // Password from Heroku config vars
+  database: process.env.MYSQL_DATABASE,   // Database name from Heroku config vars
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: 10,                    // Maximum number of connections
+  queueLimit: 0                           // Unlimited queue length
 });
 
 // Ensure database connection
