@@ -35,15 +35,15 @@ router.post('/users', checkApiKey, async (req, res) => {
     if (existingUser.length > 0) {
       // User exists, update their information
       await req.db.query(
-        'UPDATE users SET username = ?, avatar = ?, ownedProducts = ?, borrowedProducts = ?, Link = ? WHERE userid = ?',
-        [username, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link, userid]
+        'UPDATE users SET username = ?, avatar = ?, ownedProducts = ?, borrowedProducts = ?, Link = ?, Linked = ? WHERE userid = ?',
+        [username, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link, Linked, userid]
       );
       return res.json({ message: 'User updated successfully' });
     } else {
       // User does not exist, insert new record
       await req.db.query(
-        'INSERT INTO users (username, userid, avatar, ownedProducts, borrowedProducts, Link) VALUES (?, ?, ?, ?, ?, ?)',
-        [username, userid, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link]
+        'INSERT INTO users (username, userid, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [username, userid, avatar, ownedProducts.join(','), borrowedProducts.join(','), Link, Linked]
       );
       return res.status(201).json({ message: 'User created successfully' });
     }
