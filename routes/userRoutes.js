@@ -54,6 +54,7 @@ router.post('/users', checkApiKey, async (req, res) => {
           const defaultValues = {
               username: '',
               avatar: '',
+              discordid: '',
               ownedProducts: '',
               borrowedProducts: '',
               Link: '',
@@ -62,8 +63,8 @@ router.post('/users', checkApiKey, async (req, res) => {
           };
 
           await req.db.query(
-              'INSERT INTO users (userid, username, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?, ?)',
-              [userid, defaultValues.username, defaultValues.avatar, defaultValues.ownedProducts, defaultValues.borrowedProducts, defaultValues.Link, defaultValues.Linked]
+              'INSERT INTO users (userid, username, discordid, avatar, ownedProducts, borrowedProducts, Link, Linked) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+              [userid, defaultValues.username, defaultValues.avatar, defaultValues.discordid, defaultValues.ownedProducts, defaultValues.borrowedProducts, defaultValues.Link, defaultValues.Linked]
           );
 
           return res.status(201).json({ message: 'User created successfully' });
