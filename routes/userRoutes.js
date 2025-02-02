@@ -58,7 +58,7 @@ router.post('/users', checkApiKey, async (req, res) => {
               ownedProducts: '',
               borrowedProducts: '',
               Link: '',
-              Linked: false,
+              Linked: "false",
               ...updateFields // Override defaults with provided values
           };
 
@@ -70,8 +70,10 @@ router.post('/users', checkApiKey, async (req, res) => {
           return res.status(201).json({ message: 'User created successfully' });
       }
   } catch (err) {
-      res.status(500).json({ message: 'Error processing user data', error: err });
+    console.error("Database Error:", err);
+    res.status(500).json({ message: 'Error processing user data', error: err.sqlMessage || err.message });
   }
+
 });
 
 
