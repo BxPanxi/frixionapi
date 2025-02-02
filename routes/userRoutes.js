@@ -24,6 +24,28 @@ router.get('/users/:id?', checkApiKey, async (req, res) => {
   }
 });
 
+// Get all users or a specific user by ID
+router.get('/users/discord/:id?', checkApiKey, async (req, res) => {
+  try {
+    if (req.params.id) {
+      // Fetch a specific user by ID
+      const [user] = await req.db.query('SELECT * FROM users WHERE discordid = ?', [req.params.id]);
+
+      if (user.length === 0) {
+        return res.json("None"); // Instead of 404, return false
+      }
+
+      res.json(user[0]); // Return the first (and only) user found
+    } else {
+      // Fetch all users if no ID is provided
+      const [users] = await req.db.query('SELECT * FROM users');
+      res.json(users);
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Database error', error: err });
+  }
+});
+
 // Create or Update a user
 router.post('/users', checkApiKey, async (req, res) => {
   const { userid, ...updateFields } = req.body; // Extract userid separately
